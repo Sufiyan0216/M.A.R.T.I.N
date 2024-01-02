@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<launch>
+  <include file="$(find gazebo_ros)/launch/empty_world.launch"/>
+  <param name="robot_description" textfile="$(find int300)/urdf/int300_hardware.urdf" />
+
+
+  <node name="spawn_urdf" pkg="gazebo_ros"
+        type="spawn_model" output="screen"
+        args="-file $(find int300)/urdf/int300_hardware.urdf -urdf -model my_model"/>
+
+
+  <include file="$(find realsense2_camera)/launch/rs_camera.launch">
+          <arg name="enable_pointcloud"         value="true"/>
+          <arg name="filters"                   value="pointcloud"/>
+          <arg name="tf_publish_rate"           default="2"/>
+          <arg name="topic_odom_in"             value="odom"/>
+  </include>
+
+
+  <!-- pointcloud to laserscan -->
+  <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan">
+      <remap from="cloud_in" to="/camera/depth/color/points"/>
+      <remap from="scan" to="/int300/laser/scan" />
+      <rosparam file="$(find int300)/config1/ptol.yaml" command="load"  />
+    </node>
+
+  <node name="slam_gmapping" pkg="gmapping" type="slam_gmapping">
+    <remap from="/scan" to="/int300/laser/scan"/>
+    <param name="base_frame" value="base_link"/>
+    <param name="odom_frame" value="odom"/>
+    <param name="map_frame" value="map"/>
+  </node>
+
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
+    <param name="publish_frequency" type="double" value="30.0"/>
+    <param name="tf_prefix" type="string" value=""/>
+    <remap from="joint_states" to="int300/joint_states" />
+  </node>
+
+   <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" >
+     <param name  = "use_gui" value="false"/>
+     <remap from="joint_states" to="int300/joint_states" />
+  </node> 
+
+  <!--gazebo>
+        <plugin name="joint_state_publisher" filename="libgazebo_ros_joint_state_publisher.so">
+            <jointName>front_left_wheel_joint,front_right_wheel_joint,left_wheel_joint,right_wheel_joint</jointName>
+        </plugin>
+    </gazebo-->
+
+
+  <node name="rviz" pkg="rviz" type="rviz"/>
+  
+  <!--node pkg="teleop_twist_keyboard" type="teleop_twist_keyboard.py" name="teleop"/-->
+  <include file="$(find turtlebot3_teleop)/launch/turtlebot3_teleop_key.launch"/>
+</launch>

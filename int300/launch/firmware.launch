@@ -1,0 +1,60 @@
+    
+
+<?xml version="1.0" ?>
+
+<launch>
+    <include file="$(find sick_scan)/launch/sick_tim_240_3.launch"/>
+    <node name="cmdvel_listener" pkg="int1500_firmware" type="hardware.py" output="screen" />
+    <!--<node name="cmd_listener" pkg="int1500_firmware" type="hardware_right.py" output="screen" />-->
+
+    <node name="qr_reader" pkg="pf_pgv100" type="pgv100_node" output="screen"/>
+    <!--<node name="odom" pkg="int1500_firmware" type="odom.py" output="screen"/>-->
+    <node name="odom" pkg="int1500_firmware" type="odometry.py" output="screen"/>
+    <node name="encoder" pkg="int1500_firmware" type="encoder.py" output="screen"/>
+
+
+    <rosparam param="ticks_meter">31847</rosparam>
+
+    <node pkg="int1500_firmware" type="pid.py" name="lpid_velocity">
+        <remap from="wheel" to="lwheel"/>
+        <remap from="error" to="lerror"/>
+        <remap from="time" to="ltime"/>
+        <remap from="motor_cmd" to="lmotor_cmd"/>
+        <remap from="wheel_vtarget" to="lwheel_vtarget"/>
+        <remap from="wheel_vel" to="lwheel_vel"/>
+        <remap from="motor_cmd_debug" to="lmotor_pwm"/>
+        <rosparam param="Kp">51</rosparam>
+        <rosparam param="Ki">56</rosparam>
+        <rosparam param="Kd">0</rosparam>
+        <rosparam param="out_min">-255</rosparam>
+        <rosparam param="out_max">255</rosparam>
+        <rosparam param="rate">34</rosparam>
+        <rosparam param="timeout_ticks">1</rosparam>
+        <rosparam param="rolling_pts">5</rosparam>
+    </node>
+   <node pkg="int1500_firmware" type="pid.py" name="rpid_velocity">
+        <remap from="wheel" to="rwheel"/>
+        <remap from="error" to="rerror"/>
+        <remap from="time" to="rtime"/>
+
+        <remap from="motor_cmd" to="rmotor_cmd"/>
+        <remap from="wheel_vtarget" to="rwheel_vtarget"/>
+        <remap from="wheel_vel" to="rwheel_vel"/>
+        <remap from="motor_cmd_debug" to="rmotor_pwm"/>
+        <rosparam param="Kp">51</rosparam>
+        <rosparam param="Ki">56</rosparam>
+        <rosparam param="Kd">0</rosparam>
+        <rosparam param="out_min">-255</rosparam>
+        <rosparam param="out_max">255</rosparam>
+        <rosparam param="rate">34</rosparam>
+        <rosparam param="timeout_ticks">1</rosparam>
+        <rosparam param="rolling_pts">5</rosparam>
+</node>
+
+    <node pkg="int1500_firmware" type="motor_twist.py" name="twist_to_motors" output="screen">
+      <rosparam param="base_width">0.79</rosparam>
+    </node>
+
+
+</launch>
+

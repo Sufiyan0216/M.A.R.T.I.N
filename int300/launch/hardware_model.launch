@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<launch>
+
+  <param name="robot_description" textfile="$(find int300)/urdf/int300_hardware.urdf" /> 
+
+  <!--include file="$(find realsense2_camera)/launch/rs_camera.launch">
+          <arg name="enable_pointcloud"         value="true"/>
+          <arg name="filters"                   value="pointcloud"/>
+          <arg name="tf_publish_rate"           value="30"/>
+          <arg name="enable_sync"               value="false"/>
+          <arg name="align_depth"               value="false"/>
+  </include-->
+ 
+  <include file="$(find rplidar_ros)/launch/rplidar.launch">
+  	<!--param name="serial_baudrate"   value="256000"/-->
+  </include>
+
+  <node pkg="tf" type="static_transform_publisher" name="base_laser_broadcaster" args="0 0 0.39 0 0 0 base_link laser 100"/>
+
+
+  <node name="odom" pkg="int300" type="odometry.py" output="screen"/>
+  <node name="encoder" pkg="int300" type="encoder.py" output="screen"/>
+  <node name="cmdvel_listener" pkg="int300" type="diff.py" output="screen"/>
+
+
+
+  <!-- pointcloud to laserscan >
+  <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan">
+      <remap from="cloud_in" to="/camera/depth/color/points"/>
+      <remap from="scan" to="/int300/laser/scan" />
+      <rosparam file="$(find int300)/config1/ptol.yaml" command="load"  />
+    </node-->
+
+    <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
+    <!--param name="publish_frequency" type="double" value="30.0"/>
+    <param name="tf_prefix" type="string" value=""/>
+    <remap from="joint_states" to="int300/joint_states" /-->
+  </node>
+
+   <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" >
+     <!--param name  = "use_gui" value="false"/>
+     <remap from="joint_states" to="int300/joint_states" /-->
+  </node> 
+
+  
+</launch>

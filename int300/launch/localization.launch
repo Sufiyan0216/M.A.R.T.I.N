@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Arguments -->
+  <!--arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
+  <arg name="move_forward_only" default="false"/-->
+  <arg name="open_rviz" default="false"/>
+  <arg name="map_file" default="$(find int300)/map/layout.yaml"/>
+
+  <!-- model -->
+  <include file="$(find int300)/launch/robot_world.launch"/>
+  <!--include file="$(find husky-melodic-devel)/husky_description/urdf/husky.urdf.xacro.launch"/-->
+
+  <!--include file="$(find turtlebot3_bringup)/launch/turtlebot3_remote.launch">
+    <arg name="model" value="$(arg model)" />
+  </include-->
+
+  <!-- Map server -->
+  <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)"/>
+
+  <!-- AMCL -->
+  <include file="$(find int300)/launch/amcl.launch"/>
+
+  <!-- move_base >
+  <include file="$(find int300)/launch/move_base1.launch"/-->
+
+  <!-- rviz -->
+  <!--node name="rviz" pkg="rviz" type="rviz"/-->
+
+  <group if="$(arg open_rviz)">
+    <node pkg="rviz" type="rviz" name="rviz" required="true"
+          args="-d $(find int300)/rviz/model.rviz"/>
+  </group>
+
+  <group unless="$(arg open_rviz)">
+    <node name="rviz" pkg="rviz" type="rviz"/>
+  </group>
+
+ <include file="$(find turtlebot3_teleop)/launch/turtlebot3_teleop_key.launch"/>
+     
+</launch>
+
